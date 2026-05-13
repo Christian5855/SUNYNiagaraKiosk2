@@ -439,7 +439,7 @@ function fetchSheet(url){
     }
 
     const script = document.createElement("script");
-    script.src = url + "&tqx=responseHandler:" + callbackName;
+    script.src = url + "&tqx=responseHandler:" + callbackName + ";out:json";
     script.onerror = function(){
       console.error("Sheet script load failed");
       cleanup();
