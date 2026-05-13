@@ -540,11 +540,11 @@ function updateHomeAlerts(events){
   if(!events||events.length===0){container.innerHTML='<div class="home-alert-item"><span>📋</span><span>No current announcements</span></div>';return;}
   container.innerHTML=events.slice(0,4).map(ev=>'<div class="home-alert-item"><span>📅</span><span><strong>'+( ev["Title"]||"")+'</strong> &mdash; '+( ev["Date"]||"")+( ev["Location"]?" &bull; "+ev["Location"]:"")+"</span></div>").join("");
 }
-function showMobileQR(){
+window.showMobileQR = function(){
   document.getElementById("mobileQrModal").style.display="flex";
 }
 
-function hideMobileQR(){
+window.hideMobileQR = function(){
   document.getElementById("mobileQrModal").style.display="none";
 }
 // ── IDLE ──────────────────────────────────────────────────
