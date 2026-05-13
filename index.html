@@ -498,7 +498,7 @@ async function loadAcademicCalendar(){
 }
 async function loadLocations(){
   const data = await fetchSheet(LOCATIONS_SHEET_URL);
-
+console.log(data);
   if(data && data.length > 0){
 
     LOCATIONS = data.map((item, index) => {
