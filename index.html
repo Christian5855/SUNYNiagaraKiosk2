@@ -493,6 +493,49 @@ async function loadAcademicCalendar(){
     renderAcademicCalendar(data);
   }
 }
+async function loadLocations(){
+  const data = await fetchSheet(LOCATIONS_SHEET_URL);
+
+  if(data && data.length > 0){
+    LOCATIONS = data.map((item, index) => ({
+      id: index + 1,
+      name: item["Name"] || "",
+      room: item["Room"] || "",
+      cat: getLocationCategory(item["Type"] || ""),
+      x: parseFloat(item["X"]) || 50,
+      y: parseFloat(item["Y"]) || 50,
+      hours: {open: 0, close: 24},
+      steps: item["Directions"]
+        ? item["Directions"].split("|")
+        : ["Follow the highlighted route on the map.", "Check nearby signs for final confirmation."]
+    }));
+
+    renderResults();
+    renderDirectory(LOCATIONS.map(loc => ({
+      name: loc.name,
+      room: loc.room,
+      info: loc.steps.join("\n")
+    })));
+  }
+}
+
+function getLocationCategory(type){
+  const t = type.toLowerCase();
+
+  if(t.includes("class") || t.includes("academic") || t.includes("lab") || t.includes("professor")){
+    return "academic";
+  }
+
+  if(t.includes("dining") || t.includes("fitness") || t.includes("athletics") || t.includes("library")){
+    return "facilities";
+  }
+
+  if(t.includes("admin")){
+    return "admin";
+  }
+
+  return "services";
+}
 function setSyncStatus(state){
   const dot=document.getElementById("syncDot"),text=document.getElementById("syncText");
   if(state==="loading"){dot.className="sync-dot";text.textContent="Syncing...";}
