@@ -412,7 +412,11 @@ function fetchSheet(url){
 
     window[callbackName] = function(response){
       try{
-        const cols = response.table.cols.map(c => c.label || c.id || "");
+        let cols = response.table.cols.map(c => c.label || c.id || "");
+
+if(!cols.includes("Title")){
+  cols = ["Club","Title","Date","Time","Location","Color"];
+}
         const rows = response.table.rows || [];
 
         const data = rows.map(row => {
