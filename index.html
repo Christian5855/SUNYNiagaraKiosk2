@@ -528,7 +528,7 @@ console.log(data);
 
     }).filter(loc => loc.name || loc.room);
 
-    renderResults();
+   renderResults(LOCATIONS);
 
     renderDirectory(LOCATIONS.map(loc => ({
       name: loc.name,
