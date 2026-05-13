@@ -418,6 +418,9 @@ function fetchSheet(url){
     window[callbackName] = function(response){
       try{
         let cols = response.table.cols.map(c => c.label || c.id || "");
+        if(url.includes("Locations")){
+  cols = ["Name","Room","Type","Building","X","Y","Directions","Notes"];
+}
 
 if(!cols.includes("Title")){
   cols = ["Club","Title","Date","Time","Location","Color"];
