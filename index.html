@@ -318,43 +318,7 @@ const REFRESH_INTERVAL = 5 * 60 * 1000; // refresh every 5 minutes
 
 const KIOSK = {x:51.5,y:62};
 
-const LOCATIONS = [
-  {id:1,name:"Financial Aid & Student Loans",room:"A114",cat:"admin",x:22,y:87,hours:{open:8,close:17},steps:["Head left toward the A Building (Administration)","Follow the main corridor past the Testing Center","Financial Aid is on the left side of A Building, Room A114"]},
-  {id:2,name:"Enrollment Center",room:"A105",cat:"admin",x:26,y:87,hours:{open:8,close:17},steps:["Head left toward the A Building","Enter through the main A Building entrance","Enrollment Center is Room A105 on the 1st floor"]},
-  {id:3,name:"Business Office / Cashier",room:"A201",cat:"admin",x:17,y:90,hours:{open:8,close:16.5},steps:["Head to the A Building","Take the stairs to the 2nd floor","Business Office is Room A201"]},
-  {id:4,name:"Academic Affairs",room:"A245",cat:"admin",x:18,y:82,hours:{open:8,close:17},steps:["Go to the A Building 2nd floor","Academic Affairs office is Room A245"]},
-  {id:5,name:"Human Resources",room:"A261",cat:"admin",x:19,y:78,hours:{open:8,close:17},steps:["Go to the A Building 2nd floor","Human Resources is Room A261"]},
-  {id:6,name:"Office of Information Technology",room:"A131",cat:"admin",x:27,y:73,hours:{open:8,close:17},steps:["Head left down the main corridor","OIT is in Room A131 near the Testing Center"]},
-  {id:7,name:"Testing Center",room:"A167",cat:"services",x:29,y:73,hours:{open:8,close:17},steps:["Head left toward A Building","Testing Center is Room A167, near OIT"]},
-  {id:8,name:"Educational Opportunity Program",room:"A181",cat:"services",x:27,y:79,hours:{open:8,close:17},steps:["Go to the A Building 1st floor","EOP is Room A181"]},
-  {id:9,name:"Veteran Services",room:"B103",cat:"services",x:16,y:57,hours:{open:8,close:16.5},steps:["Head left and enter the B Building","Veteran Services is Room B103 near the main entrance"]},
-  {id:10,name:"Wellness Center",room:"C122",cat:"services",x:31,y:60,hours:{open:8,close:16.5},steps:["Head left toward the C Building","The Wellness Center is Room C122"]},
-  {id:11,name:"Snack Shop",room:"C Building 2F",cat:"facilities",x:34,y:37,hours:{open:8,close:15},steps:["Head left toward C Building","Snack Shop is on the 2nd floor near rooms C114-C121"]},
-  {id:12,name:"SBDC",room:"CA116",cat:"services",x:13,y:42,hours:{open:8,close:17},steps:["Head to the CA section of the building (far left)","SBDC is Room CA116"]},
-  {id:13,name:"Student Success Center",room:"D102",cat:"services",x:50,y:67,hours:{open:8,close:18},steps:["You are almost there!","The Student Success Center is Room D102, right next to this kiosk"]},
-  {id:14,name:"Learning Commons",room:"D Building",cat:"academic",x:54,y:66,hours:{open:8,close:20},steps:["The Learning Commons is right next to you","Head toward the open study area near Room D102"]},
-  {id:15,name:"Online Learning",room:"D106",cat:"academic",x:50,y:52,hours:{open:8,close:17},steps:["Online Learning is Room D106, just upstairs in D Building"]},
-  {id:16,name:"Child Development Center",room:"D Building",cat:"services",x:47,y:71,hours:{open:7,close:18},steps:["Child Development Center is in D Building, head toward the south exit"]},
-  {id:17,name:"Dulce Velez Art Gallery",room:"D101",cat:"facilities",x:48,y:69,hours:{open:9,close:16},steps:["Art Gallery is Room D101, just south of the Learning Commons"]},
-  {id:18,name:"Art, Humanities & Social Sciences",room:"E233-237",cat:"academic",x:63,y:32,hours:{open:8,close:21},steps:["Head right toward E Building","Take the stairs to the 2nd floor","Classrooms E233-237 are on the 2nd floor"]},
-  {id:19,name:"Barnes & Noble Bookstore",room:"G101",cat:"facilities",x:74,y:55,hours:{open:8,close:17},steps:["Head right toward G Building","The Bookstore is on the ground floor, Room G101"]},
-  {id:20,name:"Public Safety",room:"G108",cat:"services",x:72,y:43,hours:{open:0,close:24},steps:["Head right toward G Building","Public Safety is Room G108 near the ATM"]},
-  {id:21,name:"ATM",room:"G Building",cat:"facilities",x:79,y:43,hours:{open:0,close:24},steps:["Head right toward G Building","ATM is located near Public Safety"]},
-  {id:22,name:"Credit Union",room:"G146",cat:"services",x:82,y:43,hours:{open:9,close:16},steps:["Head right toward G Building","Credit Union is Room G146"]},
-  {id:23,name:"Dining Commons",room:"G209",cat:"facilities",x:87,y:28,hours:{open:7,close:19},steps:["Head right into G Building","Take the stairs to the 2nd floor","Dining Commons is Room G209"]},
-  {id:24,name:"Snack Bar",room:"G Building",cat:"facilities",x:78,y:55,hours:{open:8,close:15},steps:["Head right to G Building ground floor","Snack Bar is near the Bookstore"]},
-  {id:25,name:"Bowling Alley",room:"G145",cat:"facilities",x:88,y:55,hours:{open:10,close:22},steps:["Head right through G Building","Bowling Alley is Room G145 at the far right"]},
-  {id:26,name:"Student Senate",room:"G113D",cat:"admin",x:74,y:52,hours:{open:9,close:17},steps:["Head right toward G Building","Student Senate is Room G113D near the Student Lounge"]},
-  {id:27,name:"Student Lounge",room:"G117A",cat:"facilities",x:73,y:52,hours:{open:7,close:22},steps:["Head right toward G Building","Student Lounge is Room G117A"]},
-  {id:28,name:"Fitness Center",room:"H118-H139",cat:"facilities",x:92,y:62,hours:{open:6,close:21},steps:["Head right through H Building","Fitness Center is Rooms H118-H139"]},
-  {id:29,name:"Gym",room:"H110",cat:"facilities",x:88,y:67,hours:{open:8,close:21},steps:["Head right through G and into H Building","Gym is Room H110"]},
-  {id:30,name:"Athletics Division",room:"H067",cat:"admin",x:91,y:72,hours:{open:8,close:17},steps:["Head right into H Building","Athletics Division is Room H067"]},
-  {id:31,name:"Theatre",room:"F Building",cat:"facilities",x:81,y:78,hours:{open:9,close:22},steps:["Head right and look for F Building","Theatre is in F Building"]},
-  {id:32,name:"Library Circulation",room:"D201",cat:"academic",x:53,y:84,hours:{open:8,close:20},steps:["Head south toward the Lewis Library building","Library Circulation is Room D201 on the 2nd floor"]},
-  {id:33,name:"Academic Center for Excellence",room:"D217",cat:"services",x:51,y:78,hours:{open:8,close:18},steps:["Head toward the Lewis Library area","Academic Center for Excellence is Room D217"]},
-  {id:34,name:"Computer Lab",room:"E172",cat:"academic",x:44,y:72,hours:{open:8,close:21},steps:["Head slightly left toward the D/E corridor","Computer Lab is Room E172"]},
-  {id:35,name:"Campus Housing",room:"North Campus",cat:"facilities",x:72,y:14,hours:{open:0,close:24},steps:["Head right through G Building","Exit toward the north (back of campus)","Campus Housing is at the north end of campus"]},
-];
+const LOCATIONS_SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?sheet=Locations";
 
 const DIRECTORY = [
   {name:"Financial Aid & Scholarships",room:"A114",info:"Mon-Fri 8am-5pm\n(716) 614-5930"},
@@ -493,6 +457,46 @@ async function loadAcademicCalendar(){
     renderAcademicCalendar(data);
   }
 }
+async function loadLocations(){
+  const data = await fetchSheet(LOCATIONS_SHEET_URL);
+
+  if(data && data.length > 0){
+    LOCATIONS = data.map(item => ({
+      name: item["Name"] || "",
+      room: item["Room"] || "",
+      category: getLocationCategory(item["Type"] || ""),
+      building: item["Building"] || "",
+      x: parseFloat(item["X"]) || 50,
+      y: parseFloat(item["Y"]) || 50,
+      directions: item["Directions"] ? item["Directions"].split("|") : [
+        "Follow the highlighted route on the map.",
+        "Check nearby room signs for final confirmation."
+      ],
+      notes: item["Notes"] || ""
+    }));
+
+    renderResults();
+    renderDirectory();
+  }
+}
+
+function getLocationCategory(type){
+  const t = type.toLowerCase();
+
+  if(t.includes("class") || t.includes("academic") || t.includes("lab") || t.includes("professor")){
+    return "academic";
+  }
+
+  if(t.includes("service") || t.includes("office") || t.includes("student")){
+    return "services";
+  }
+
+  if(t.includes("dining") || t.includes("fitness") || t.includes("athletics") || t.includes("library")){
+    return "facilities";
+  }
+
+  return "services";
+}  
 function setSyncStatus(state){
   const dot=document.getElementById("syncDot"),text=document.getElementById("syncText");
   if(state==="loading"){dot.className="sync-dot";text.textContent="Syncing...";}
