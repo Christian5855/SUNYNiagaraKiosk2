@@ -634,17 +634,6 @@ function showRoute(loc){
 function clearDestination(){selectedLocation=null;document.getElementById("pathLine").style.display="none";document.getElementById("destMarker").style.display="none";document.getElementById("directionPanel").classList.remove("visible");filterLocations();}
 function goToLocation(name){const loc=LOCATIONS.find(l=>l.name===name);if(loc){switchTab("wayfinding");setTimeout(()=>selectLocation(loc),100);}}
 
-// ── QR ────────────────────────────────────────────────────
-function drawQR(loc){
-  const canvas=document.getElementById("qrCanvas"),ctx=canvas.getContext("2d");
-  const modules=21,cell=Math.floor(100/modules);
-  ctx.clearRect(0,0,100,100);ctx.fillStyle="#fff";ctx.fillRect(0,0,100,100);
-  function finder(x,y){ctx.fillStyle="#003087";ctx.fillRect(x*cell,y*cell,7*cell,7*cell);ctx.fillStyle="#fff";ctx.fillRect((x+1)*cell,(y+1)*cell,5*cell,5*cell);ctx.fillStyle="#003087";ctx.fillRect((x+2)*cell,(y+2)*cell,3*cell,3*cell);}
-  finder(0,0);finder(14,0);finder(0,14);
-  const seed=loc.id*7;
-  for(let r=0;r<modules;r++){for(let c=0;c<modules;c++){if((r<9&&c<9)||(r<9&&c>11)||(r>11&&c<9))continue;if((seed^(r*31+c*17))%3===0){ctx.fillStyle="#003087";ctx.fillRect(c*cell,r*cell,cell,cell);}}}
-  ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fillRect(35,40,30,20);ctx.fillStyle="#003087";ctx.font="bold 8px sans-serif";ctx.textAlign="center";ctx.fillText("SUNY",50,53);
-}
 
 // ── DIRECTORY ─────────────────────────────────────────────
 function renderDirectory(items){
