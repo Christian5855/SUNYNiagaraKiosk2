@@ -305,8 +305,10 @@ footer{background:#001f5c;color:rgba(255,255,255,0.5);text-align:center;font-siz
 <script>
 // ── CONFIG ────────────────────────────────────────────────
 const SHEET_ID = "2PACX-1vTL9xOQ-j_SvCVcfdYAGpdTnZajweUH3tr2pu-5d-wSgQYfIHNf9ObUFTaDqgvxl9Bqr5NvxRrDxB3p";
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/" + SHEET_ID + "/gviz/tq?tqx=out:json&sheet=Events";
-const TICKER_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/" + SHEET_ID + "/gviz/tq?tqx=out:json&sheet=Ticker";
+
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/" + SHEET_ID + "/gviz/tq?sheet=Events&tqx=out:json";
+
+const TICKER_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/" + SHEET_ID + "/gviz/tq?sheet=Ticker&tqx=out:json";
 const REFRESH_INTERVAL = 5 * 60 * 1000; // refresh every 5 minutes
 
 const KIOSK = {x:51.5,y:62};
