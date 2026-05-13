@@ -406,30 +406,48 @@ function updateClock(){const now=new Date();document.getElementById("clock").tex
 setInterval(updateClock,1000);updateClock();
 
 // ── GOOGLE SHEETS FETCH ───────────────────────────────────
-async function fetchSheet(url){
-  try{
-    const res = await fetch(url);
-    const text = await res.text();
+function fetchSheet(url){
+  return new Promise((resolve) => {
+    const callbackName = "sheetCallback_" + Math.random().toString(36).substring(2);
 
-    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?/);
-    if(!match) throw new Error("Google Sheet response was not readable");
+    window[callbackName] = function(response){
+      try{
+        const cols = response.table.cols.map(c => c.label || c.id || "");
+        const rows = response.table.rows || [];
 
-    const json = JSON.parse(match[1]);
-    const cols = json.table.cols.map(c => c.label || c.id || "");
-    const rows = json.table.rows || [];
+        const data = rows.map(row => {
+          const obj = {};
+          cols.forEach((col, i) => {
+            const cell = row.c && row.c[i] ? row.c[i] : null;
+            obj[col] = cell ? (cell.f || cell.v || "") : "";
+          });
+          return obj;
+        }).filter(r => Object.values(r).some(v => v));
 
-    return rows.map(row => {
-      const obj = {};
-      cols.forEach((col, i) => {
-        const cell = row.c && row.c[i] ? row.c[i] : null;
-        obj[col] = cell ? (cell.f || cell.v || "") : "";
-      });
-      return obj;
-    }).filter(r => Object.values(r).some(v => v));
-  }catch(e){
-    console.error("Sheet fetch error:", e);
-    return null;
-  }
+        cleanup();
+        resolve(data);
+      }catch(e){
+        console.error("Sheet parse error:", e);
+        cleanup();
+        resolve(null);
+      }
+    };
+
+    function cleanup(){
+      delete window[callbackName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    const script = document.createElement("script");
+    script.src = url + "&tqx=responseHandler:" + callbackName;
+    script.onerror = function(){
+      console.error("Sheet script load failed");
+      cleanup();
+      resolve(null);
+    };
+
+    document.body.appendChild(script);
+  });
 }
   
 async function loadEvents(){
