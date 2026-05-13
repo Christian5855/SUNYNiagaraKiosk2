@@ -500,26 +500,43 @@ async function loadLocations(){
   const data = await fetchSheet(LOCATIONS_SHEET_URL);
 
   if(data && data.length > 0){
-    console.log("Locations data:", data);
-    LOCATIONS = data.map((item, index) => ({
-      id: index + 1,
-      name: item["Name"] || "",
-      room: item["Room"] || "",
-      cat: getLocationCategory(item["Type"] || ""),
-      x: parseFloat(item["X"]) || 50,
-      y: parseFloat(item["Y"]) || 50,
-      hours: {open: 0, close: 24},
-      steps: item["Directions"]
-        ? item["Directions"].split("|")
-        : ["Follow the highlighted route on the map.", "Check nearby signs for final confirmation."]
-    }));
+
+    LOCATIONS = data.map((item, index) => {
+
+      const name = item["Name"] || item["A"] || "";
+      const room = item["Room"] || item["B"] || "";
+      const type = item["Type"] || item["C"] || "";
+      const x = item["X"] || item["E"] || 50;
+      const y = item["Y"] || item["F"] || 50;
+      const directions = item["Directions"] || item["G"] || "";
+
+      return {
+        id: index + 1,
+        name: name,
+        room: room,
+        cat: getLocationCategory(type),
+        x: parseFloat(x) || 50,
+        y: parseFloat(y) || 50,
+        hours: {open:0,close:24},
+        steps: directions
+          ? directions.split("|")
+          : [
+              "Follow the highlighted route on the map.",
+              "Check nearby room signs for final confirmation."
+            ]
+      };
+
+    }).filter(loc => loc.name || loc.room);
 
     renderResults();
+
     renderDirectory(LOCATIONS.map(loc => ({
       name: loc.name,
       room: loc.room,
       info: loc.steps.join("\n")
     })));
+
+    clearDestination();
   }
 }
 
