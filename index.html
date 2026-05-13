@@ -500,6 +500,7 @@ async function loadLocations(){
   const data = await fetchSheet(LOCATIONS_SHEET_URL);
 
   if(data && data.length > 0){
+    console.log("Locations data:", data);
     LOCATIONS = data.map((item, index) => ({
       id: index + 1,
       name: item["Name"] || "",
