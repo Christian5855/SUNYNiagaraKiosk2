@@ -313,7 +313,7 @@ const SHEET_ID = "1-j9dhfaLgcd5LI2LxUbmVwnK3Nvq2hEStQPtytW-Eek";
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?sheet=Events";
 
 const TICKER_SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?sheet=Ticker";
-
+const ACADEMIC_SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?sheet=AcademicCalendar";
 const REFRESH_INTERVAL = 5 * 60 * 1000; // refresh every 5 minutes
 
 const KIOSK = {x:51.5,y:62};
@@ -486,14 +486,57 @@ async function loadTicker(){
     document.getElementById("tickerContent").textContent=fallback.join("   •••   ");
   }
 }
+async function loadAcademicCalendar(){
+  const data = await fetchSheet(ACADEMIC_SHEET_URL);
 
+  if(data){
+    renderAcademicCalendar(data);
+  }
+}
 function setSyncStatus(state){
   const dot=document.getElementById("syncDot"),text=document.getElementById("syncText");
   if(state==="loading"){dot.className="sync-dot";text.textContent="Syncing...";}
   else if(state==="live"){dot.className="sync-dot live";text.textContent="Live";}
   else{dot.className="sync-dot error";text.textContent="Offline";}
 }
+function renderAcademicCalendar(data){
+  const container = document.getElementById("calGrid");
 
+  if(!container) return;
+
+  const grouped = {};
+
+  data.forEach(item => {
+    const month = item["Month"] || "Other";
+
+    if(!grouped[month]){
+      grouped[month] = [];
+    }
+
+    grouped[month].push(item);
+  });
+
+  container.innerHTML = Object.keys(grouped).map(month => `
+    <div class="calendar-column">
+      <div class="calendar-month">${month}</div>
+
+      ${grouped[month].map(ev => `
+        <div class="calendar-item">
+          <div class="calendar-date">
+            <div class="calendar-day">${ev["Day"] || ""}</div>
+            <div class="calendar-short">${ev["MonthShort"] || ""}</div>
+          </div>
+
+          <div class="calendar-info">
+            <div class="calendar-title">${ev["Title"] || ""}</div>
+            <div class="calendar-subtitle">${ev["Subtitle"] || ""}</div>
+            <div class="calendar-tag">${ev["Tag"] || ""}</div>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
+}
 function renderEvents(data){
   if(!data||data.length===0){
     document.getElementById("eventsContainer").innerHTML='<div class="error-state">No events found. Add rows to the Events sheet in Google Sheets.</div>';
@@ -657,6 +700,7 @@ renderDirectory(DIRECTORY);
 renderCalendar();
 loadEvents();
 loadTicker();
+loadAcademicCalendar();
 setInterval(loadEvents, REFRESH_INTERVAL);
 setInterval(loadTicker, REFRESH_INTERVAL);
 </script>
