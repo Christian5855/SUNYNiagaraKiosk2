@@ -540,7 +540,13 @@ function updateHomeAlerts(events){
   if(!events||events.length===0){container.innerHTML='<div class="home-alert-item"><span>📋</span><span>No current announcements</span></div>';return;}
   container.innerHTML=events.slice(0,4).map(ev=>'<div class="home-alert-item"><span>📅</span><span><strong>'+( ev["Title"]||"")+'</strong> &mdash; '+( ev["Date"]||"")+( ev["Location"]?" &bull; "+ev["Location"]:"")+"</span></div>").join("");
 }
+function showMobileQR(){
+  document.getElementById("mobileQrModal").style.display="flex";
+}
 
+function hideMobileQR(){
+  document.getElementById("mobileQrModal").style.display="none";
+}
 // ── IDLE ──────────────────────────────────────────────────
 function resetIdleTimer(){clearTimeout(idleTimer);idleTimer=setTimeout(showIdle,60000);}
 function showIdle(){document.getElementById("idleScreen").classList.add("visible");idleSlideTimer=setInterval(nextIdleSlide,4000);}
