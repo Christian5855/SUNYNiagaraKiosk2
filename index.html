@@ -517,23 +517,33 @@ function renderAcademicCalendar(data){
   });
 
   container.innerHTML = Object.keys(grouped).map(month => `
-    <div class="calendar-column">
-      <div class="calendar-month">${month}</div>
+    <div class="cal-month">
+      <div class="cal-month-header">${month}</div>
 
-      ${grouped[month].map(ev => `
-        <div class="calendar-item">
-          <div class="calendar-date">
-            <div class="calendar-day">${ev["Day"] || ""}</div>
-            <div class="calendar-short">${ev["MonthShort"] || ""}</div>
-          </div>
+      <div class="cal-items">
+        ${grouped[month].map(ev => `
+          <div class="cal-item">
 
-          <div class="calendar-info">
-            <div class="calendar-title">${ev["Title"] || ""}</div>
-            <div class="calendar-subtitle">${ev["Subtitle"] || ""}</div>
-            <div class="calendar-tag">${ev["Tag"] || ""}</div>
+            <div class="cal-date-badge">
+              <div class="cal-date-day">${ev["Day"] || ""}</div>
+              <div class="cal-date-mon">${ev["MonthShort"] || ""}</div>
+            </div>
+
+            <div>
+              <div class="cal-item-title">${ev["Title"] || ""}</div>
+
+              <div class="cal-item-sub">
+                ${ev["Subtitle"] || ""}
+              </div>
+
+              <div class="cal-tag cal-tag-${(ev["Tag"] || "event").toLowerCase().replace(/\s+/g,"-")}">
+                ${ev["Tag"] || "event"}
+              </div>
+            </div>
+
           </div>
-        </div>
-      `).join("")}
+        `).join("")}
+      </div>
     </div>
   `).join("");
 }
