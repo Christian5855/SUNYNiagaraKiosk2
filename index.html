@@ -418,13 +418,17 @@ function fetchSheet(url){
     window[callbackName] = function(response){
       try{
         let cols = response.table.cols.map(c => c.label || c.id || "");
-        if(url.includes("Locations")){
-  cols = ["Name","Room","Type","Building","X","Y","Directions","Notes"];
-}
 
-if(!cols.includes("Title")){
-  cols = ["Club","Title","Date","Time","Location","Color"];
-}
+        if(url.includes("sheet=Locations")){
+          cols = ["Name","Room","Type","Building","X","Y","Directions","Notes"];
+        } else if(url.includes("sheet=Events")){
+          cols = ["Club","Title","Date","Time","Location","Color"];
+        } else if(url.includes("sheet=Ticker")){
+          cols = ["Message"];
+        } else if(url.includes("sheet=AcademicCalendar")){
+          cols = ["Month","Day","MonthShort","Title","Subtitle","Tag"];
+        }
+
         const rows = response.table.rows || [];
 
         const data = rows.map(row => {
@@ -434,7 +438,7 @@ if(!cols.includes("Title")){
             obj[col] = cell ? (cell.f || cell.v || "") : "";
           });
           return obj;
-        }).filter(r => Object.values(r).some(v => v));
+        }).filter(r => Object.values(r).some(v => v !== ""));
 
         cleanup();
         resolve(data);
@@ -496,62 +500,66 @@ async function loadAcademicCalendar(){
     renderAcademicCalendar(data);
   }
 }
-async function loadLocations(){
+async async function loadLocations(){
   const data = await fetchSheet(LOCATIONS_SHEET_URL);
-console.log(data);
-  if(data && data.length > 0){
 
-    LOCATIONS = data.map((item, index) => {
-
-      const name = item["Name"] || item["A"] || "";
-      const room = item["Room"] || item["B"] || "";
-      const type = item["Type"] || item["C"] || "";
-      const x = item["X"] || item["E"] || 50;
-      const y = item["Y"] || item["F"] || 50;
-      const directions = item["Directions"] || item["G"] || "";
-
-      return {
-        id: index + 1,
-        name: name,
-        room: room,
-        cat: getLocationCategory(type),
-        x: parseFloat(x) || 50,
-        y: parseFloat(y) || 50,
-        hours: {open:0,close:24},
-        steps: directions
-          ? directions.split("|")
-          : [
-              "Follow the highlighted route on the map.",
-              "Check nearby room signs for final confirmation."
-            ]
-      };
-
-    }).filter(loc => loc.name || loc.room);
-
-   renderResults(LOCATIONS);
-
-    renderDirectory(LOCATIONS.map(loc => ({
-      name: loc.name,
-      room: loc.room,
-      info: loc.steps.join("\n")
-    })));
-
-    clearDestination();
+  if(!data || data.length === 0){
+    console.warn("No live Locations rows found. Using built-in backup locations.");
+    renderResults(LOCATIONS);
+    return;
   }
+
+  LOCATIONS = data.map((item, index) => {
+    const name = item["Name"] || "";
+    const room = item["Room"] || "";
+    const type = item["Type"] || "";
+    const x = item["X"] || 50;
+    const y = item["Y"] || 50;
+    const directions = item["Directions"] || "";
+    const notes = item["Notes"] || "";
+
+    return {
+      id: index + 1,
+      name: String(name).trim(),
+      room: String(room).trim(),
+      cat: getLocationCategory(type),
+      x: parseFloat(x) || 50,
+      y: parseFloat(y) || 50,
+      hours: {open:0,close:24},
+      steps: directions
+        ? String(directions).split("|").map(s => s.trim()).filter(Boolean)
+        : [
+            "Follow the highlighted route on the map.",
+            "Check nearby room signs for final confirmation."
+          ],
+      notes: String(notes || "").trim()
+    };
+  }).filter(loc => loc.name || loc.room);
+
+  selectedLocation = null;
+  renderResults(LOCATIONS);
+
+  renderDirectory(LOCATIONS.map(loc => ({
+    name: loc.name || loc.room,
+    room: loc.room,
+    info: loc.notes || loc.steps.join("\n")
+  })));
+
+  clearDestination();
 }
 
 function getLocationCategory(type){
-  const t = type.toLowerCase();
+  const t = String(type || "").toLowerCase();
 
   if(t.includes("class") || t.includes("academic") || t.includes("lab") || t.includes("professor")){
     return "academic";
   }
 
-  if(t.includes("dining") || t.includes("fitness") || t.includes("athletics") || t.includes("library")){
+  if(t.includes("dining") || t.includes("fitness") || t.includes("athletics") || t.includes("library") || t.includes("recreation")){
     return "facilities";
   }
 
-  if(t.includes("admin")){
+  if(t.includes("admin") || t.includes("office")){
     return "admin";
   }
 
@@ -707,13 +715,15 @@ function pctToPixel(xP,yP){if(!mapDisplayRect)return{x:0,y:0};return{x:mapDispla
 function placeYAH(){const p=pctToPixel(KIOSK.x,KIOSK.y),m=document.getElementById("yahMarker");m.style.left=p.x+"px";m.style.top=p.y+"px";m.style.display="flex";}
 
 // ── WAYFINDING ────────────────────────────────────────────
-function renderResults(locs){
-  const list=document.getElementById("resultsList");list.innerHTML="";
-  locs.forEach(loc=>{
+function renderResults(locs = LOCATIONS){
+  const list=document.getElementById("resultsList");
+  if(!list) return;
+  list.innerHTML="";
+  (locs || []).forEach(loc=>{
     const d=document.createElement("div");d.className="result-item"+(selectedLocation&&selectedLocation.id===loc.id?" selected":"");
     const bc={admin:"badge-admin",academic:"badge-academic",services:"badge-services",facilities:"badge-facilities"}[loc.cat]||"badge-admin";
-    const bl={admin:"Admin",academic:"Academic",services:"Services",facilities:"Facilities"}[loc.cat]||loc.cat;
-    d.innerHTML='<div class="result-name">'+loc.name+hoursBadge(loc)+'</div><div class="result-location">Room '+loc.room+'</div><span class="result-badge '+bc+'">'+bl+"</span>";
+    const bl={admin:"Admin",academic:"Academic",services:"Services",facilities:"Facilities"}[loc.cat]||loc.cat||"Location";
+    d.innerHTML='<div class="result-name">'+(loc.name || loc.room || "Unnamed Location")+hoursBadge(loc)+'</div><div class="result-location">Room '+(loc.room || "")+'</div><span class="result-badge '+bc+'">'+bl+"</span>";
     d.onclick=()=>selectLocation(loc);list.appendChild(d);
   });
 }
@@ -772,6 +782,16 @@ function renderCalendar(){
 // ── INIT ──────────────────────────────────────────────────
 renderDirectory(DIRECTORY);
 renderCalendar();
+
+const mapImgEl = document.getElementById("mapImg");
+if(mapImgEl){
+  if(mapImgEl.complete){
+    initMap();
+  } else {
+    mapImgEl.addEventListener("load", initMap, {once:true});
+  }
+}
+
 loadEvents();
 loadTicker();
 loadAcademicCalendar();
