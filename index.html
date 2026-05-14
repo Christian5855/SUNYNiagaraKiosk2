@@ -417,18 +417,17 @@ function fetchSheet(url){
 
     window[callbackName] = function(response){
       try{
-        const rows = (response.table && response.table.rows) ? response.table.rows : [];
-        const rawCols = (response.table && response.table.cols) ? response.table.cols.map(c => c.label || c.id || "") : [];
-        let cols = rawCols;
+        const rows = (response && response.table && response.table.rows) ? response.table.rows : [];
+        const rawCols = (response && response.table && response.table.cols) ? response.table.cols : [];
+        let cols = rawCols.map(c => c.label || c.id || "");
 
-        // Google Sheets sometimes sends blank/generic column labels. Force the expected headers per tab.
-        if(url.includes("sheet=Locations")){
+        if(url.includes("Locations")){
           cols = ["Name","Room","Type","Building","X","Y","Directions","Notes"];
-        } else if(url.includes("sheet=AcademicCalendar")){
+        } else if(url.includes("AcademicCalendar")){
           cols = ["Month","Day","MonthShort","Title","Subtitle","Tag"];
-        } else if(url.includes("sheet=Ticker")){
+        } else if(url.includes("Ticker")){
           cols = ["Message"];
-        } else if(url.includes("sheet=Events")){
+        } else if(url.includes("Events")){
           cols = ["Club","Title","Date","Time","Location","Color"];
         }
 
@@ -456,9 +455,10 @@ function fetchSheet(url){
     }
 
     const script = document.createElement("script");
-    script.src = url + "&tqx=responseHandler:" + callbackName + ";out:json";
+    const separator = url.includes("?") ? "&" : "?";
+    script.src = url + separator + "tqx=responseHandler:" + callbackName + ";out:json";
     script.onerror = function(){
-      console.error("Sheet script load failed:", url);
+      console.error("Sheet script load failed", url);
       cleanup();
       resolve(null);
     };
@@ -466,6 +466,7 @@ function fetchSheet(url){
     document.body.appendChild(script);
   });
 }
+
   
 async function loadEvents(){
   setSyncStatus("loading");
@@ -505,48 +506,51 @@ async function loadLocations(){
   const data = await fetchSheet(LOCATIONS_SHEET_URL);
 
   if(!data || data.length === 0){
-    console.warn("Locations sheet returned no rows. Keeping backup hardcoded locations.");
+    console.warn("Locations sheet returned no data. Keeping backup locations.");
     renderResults(LOCATIONS);
     return;
   }
 
-  const sheetLocations = data.map((item, index) => {
-    const name = String(item["Name"] || "").trim();
-    const room = String(item["Room"] || "").trim();
-    const type = String(item["Type"] || "").trim();
-    const building = String(item["Building"] || "").trim();
-    const x = parseFloat(item["X"]);
-    const y = parseFloat(item["Y"]);
-    const directions = String(item["Directions"] || "").trim();
-    const notes = String(item["Notes"] || "").trim();
+  const mapped = data.map((item, index) => {
+    const name = item["Name"] || "";
+    const room = item["Room"] || "";
+    const type = item["Type"] || "";
+    const x = item["X"] || 50;
+    const y = item["Y"] || 50;
+    const directions = item["Directions"] || "";
+    const notes = item["Notes"] || "";
 
     return {
       id: index + 1,
-      name: name || room || "Unnamed Location",
-      room: room,
+      name: String(name).trim(),
+      room: String(room).trim(),
       cat: getLocationCategory(type),
-      building: building,
-      x: Number.isFinite(x) ? x : 50,
-      y: Number.isFinite(y) ? y : 50,
+      x: parseFloat(x) || 50,
+      y: parseFloat(y) || 50,
       hours: {open:0, close:24},
       steps: directions
-        ? directions.split("|").map(s => s.trim()).filter(Boolean)
+        ? String(directions).split("|").map(s => s.trim()).filter(Boolean)
         : ["Follow the highlighted route on the map.", "Check nearby room signs for final confirmation."],
-      notes: notes
+      notes: String(notes || "")
     };
   }).filter(loc => loc.name || loc.room);
 
-  if(sheetLocations.length > 0){
-    LOCATIONS = sheetLocations;
-    selectedLocation = null;
+  if(mapped.length === 0){
+    console.warn("Locations sheet rows were blank after mapping. Keeping backup locations.");
     renderResults(LOCATIONS);
-    renderDirectory(LOCATIONS.map(loc => ({
-      name: loc.name,
-      room: loc.room,
-      info: (loc.notes ? loc.notes + "
-" : "") + loc.steps.join("
-")
-    })));
+    return;
+  }
+
+  LOCATIONS = mapped;
+  renderResults(LOCATIONS);
+
+  renderDirectory(LOCATIONS.map(loc => ({
+    name: loc.name,
+    room: loc.room,
+    info: (loc.notes ? loc.notes + "\n" : "") + loc.steps.join("\n")
+  })));
+
+  if(selectedLocation){
     clearDestination();
   }
 }
@@ -719,22 +723,27 @@ function placeYAH(){const p=pctToPixel(KIOSK.x,KIOSK.y),m=document.getElementByI
 
 // ── WAYFINDING ────────────────────────────────────────────
 function renderResults(locs){
-  locs = Array.isArray(locs) ? locs : LOCATIONS;
   const list=document.getElementById("resultsList");
   if(!list) return;
+  locs = Array.isArray(locs) ? locs : LOCATIONS;
   list.innerHTML="";
+
   locs.forEach(loc=>{
-    const d=document.createElement("div");d.className="result-item"+(selectedLocation&&selectedLocation.id===loc.id?" selected":"");
-    const bc={admin:"badge-admin",academic:"badge-academic",services:"badge-services",facilities:"badge-facilities"}[loc.cat]||"badge-admin";
-    const bl={admin:"Admin",academic:"Academic",services:"Services",facilities:"Facilities"}[loc.cat]||loc.cat;
-    d.innerHTML='<div class="result-name">'+loc.name+hoursBadge(loc)+'</div><div class="result-location">Room '+loc.room+'</div><span class="result-badge '+bc+'">'+bl+"</span>";
-    d.onclick=()=>selectLocation(loc);list.appendChild(d);
+    const d=document.createElement("div");
+    d.className="result-item"+(selectedLocation&&selectedLocation.id===loc.id?" selected":"");
+    const cat = loc.cat || "services";
+    const bc={admin:"badge-admin",academic:"badge-academic",services:"badge-services",facilities:"badge-facilities"}[cat]||"badge-services";
+    const bl={admin:"Admin",academic:"Academic",services:"Services",facilities:"Facilities"}[cat]||"Services";
+    d.innerHTML='<div class="result-name">'+(loc.name || "Untitled")+hoursBadge(loc)+'</div><div class="result-location">Room '+(loc.room || "")+'</div><span class="result-badge '+bc+'">'+bl+"</span>";
+    d.onclick=()=>selectLocation(loc);
+    list.appendChild(d);
   });
 }
 function filterLocations(){
-  const q=document.getElementById("waySearch").value.toLowerCase();
-  let f=LOCATIONS;
-  if(currentCat!=="all")f=f.filter(l=>l.cat===currentCat);
+  const input=document.getElementById("waySearch");
+  const q=input ? input.value.toLowerCase() : "";
+  let f=Array.isArray(LOCATIONS) ? LOCATIONS : [];
+  if(currentCat!=="all")f=f.filter(l=>(l.cat||"")===currentCat);
   if(q)f=f.filter(l=>String(l.name||"").toLowerCase().includes(q)||String(l.room||"").toLowerCase().includes(q));
   renderResults(f);
 }
@@ -745,7 +754,6 @@ function selectLocation(loc){
   document.getElementById("dirRoom").textContent="Room "+loc.room;
   document.getElementById("dirSteps").innerHTML=loc.steps.map((s,i)=>'<div class="step"><div class="step-num">'+( i+1)+'</div><div>'+s+"</div></div>").join("");
   document.getElementById("directionPanel").classList.add("visible");
-  drawQR(loc);
 }
 function showRoute(loc){
   updateMapRect();
@@ -756,7 +764,7 @@ function showRoute(loc){
   document.getElementById("destLabel").textContent=loc.name;placeYAH();
 }
 function clearDestination(){selectedLocation=null;document.getElementById("pathLine").style.display="none";document.getElementById("destMarker").style.display="none";document.getElementById("directionPanel").classList.remove("visible");filterLocations();}
-function goToLocation(name){const loc=LOCATIONS.find(l=>l.name===name);if(loc){switchTab("wayfinding");setTimeout(()=>selectLocation(loc),100);}}
+function goToLocation(name){const q=String(name||"").toLowerCase();const loc=LOCATIONS.find(l=>String(l.name||"").toLowerCase()===q)||LOCATIONS.find(l=>String(l.name||"").toLowerCase().includes(q)||q.includes(String(l.name||"").toLowerCase()));if(loc){switchTab("wayfinding");setTimeout(()=>selectLocation(loc),100);}}
 
 
 // ── DIRECTORY ─────────────────────────────────────────────
@@ -789,6 +797,16 @@ renderCalendar();
 loadEvents();
 loadTicker();
 loadAcademicCalendar();
+
+const mapImg = document.getElementById("mapImg");
+if(mapImg){
+  if(mapImg.complete){
+    initMap();
+  } else {
+    mapImg.addEventListener("load", initMap);
+  }
+}
+
 loadLocations();
 setInterval(loadEvents, REFRESH_INTERVAL);
 setInterval(loadTicker, REFRESH_INTERVAL);
