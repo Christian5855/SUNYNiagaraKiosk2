@@ -456,7 +456,7 @@ function fetchSheet(url){
 
     const script = document.createElement("script");
     const separator = url.includes("?") ? "&" : "?";
-    script.src = url + separator + "tqx=responseHandler:" + callbackName + ";out:json";
+    script.src = url + "&tqx=responseHandler:" + callbackName + ";out:json&cacheBust=" + Date.now();
     script.onerror = function(){
       console.error("Sheet script load failed", url);
       cleanup();
