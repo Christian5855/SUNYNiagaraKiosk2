@@ -481,6 +481,7 @@ async function loadEvents(){
   setSyncStatus("live");
   renderEvents(data);
   updateIdleSlides(data);
+  updateHomeAlerts(data);
   document.getElementById("syncText").textContent="Live from Google Sheets · "+formatTime(new Date());
 }
 
